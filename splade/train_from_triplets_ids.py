@@ -126,7 +126,8 @@ def train(exp_dict: DictConfig):
         print("train: {} pairs ~~ val: {} pairs".format(len(data_train), len(data_val)))
         if train_mode == "triplets":
             val_loss_loader = SiamesePairsDataLoaderTripletsIds(
-                dataset=data_val, batch_size=config["eval_batch_size"],
+                dataset=data_val,
+                batch_size=config["eval_batch_size"],
                 shuffle=False,
                 num_workers=4,
                 tokenizer_type=config["tokenizer_type"],
