@@ -9,17 +9,19 @@ from transformers import AutoTokenizer
 from ..utils.utils import rename_keys
 
 
-class DataLoaderWrapper(DataLoader):
-    def __init__(self, tokenizer_type, max_length, **kwargs):
+class DataLoaderWrapperTripletsIds(DataLoader):
+    def __init__(self, tokenizer_type, max_length, map_id_to_query_text, map_id_to_doc_text, **kwargs):
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_type)
+        self.map_id_to_query_text = map_id_to_query_text
+        self.map_id_to_doc_text = map_id_to_doc_text
         super().__init__(collate_fn=self.collate_fn, **kwargs, pin_memory=True)
 
     def collate_fn(self, batch):
         raise NotImplementedError("must implement this method")
+        
 
-
-class SiamesePairsDataLoaderTripletsIds(DataLoaderWrapper):
+class SiamesePairsDataLoaderTripletsIds(DataLoaderWrapperTripletsIds):
     """Siamese encoding (query and document independent)
     train mode (pairs)
     """
@@ -55,6 +57,16 @@ class SiamesePairsDataLoaderTripletsIds(DataLoaderWrapper):
                                return_attention_mask=True)
         sample = {**rename_keys(q, "q"), **rename_keys(d_pos, "pos"), **rename_keys(d_neg, "neg")}
         return {k: torch.tensor(v) for k, v in sample.items()}
+
+
+class DataLoaderWrapper(DataLoader):
+    def __init__(self, tokenizer_type, max_length, **kwargs):
+        self.max_length = max_length
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_type)
+        super().__init__(collate_fn=self.collate_fn, **kwargs, pin_memory=True)
+
+    def collate_fn(self, batch):
+        raise NotImplementedError("must implement this method")
 
 
 class SiamesePairsDataLoader(DataLoaderWrapper):
