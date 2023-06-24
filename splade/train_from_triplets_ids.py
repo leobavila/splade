@@ -125,11 +125,16 @@ def train(exp_dict: DictConfig):
             exp_dict["data"]["VALIDATION_SIZE_FOR_LOSS"]])
         print("train: {} pairs ~~ val: {} pairs".format(len(data_train), len(data_val)))
         if train_mode == "triplets":
-            val_loss_loader = SiamesePairsDataLoaderTripletsIds(dataset=data_val, batch_size=config["eval_batch_size"],
-                                                     shuffle=False,
-                                                     num_workers=4,
-                                                     tokenizer_type=config["tokenizer_type"],
-                                                     max_length=config["max_length"], drop_last=drop_last)
+            val_loss_loader = SiamesePairsDataLoaderTripletsIds(
+                dataset=data_val, batch_size=config["eval_batch_size"],
+                shuffle=False,
+                num_workers=4,
+                tokenizer_type=config["tokenizer_type"],
+                max_length=config["max_length"],
+                drop_last=drop_last,
+                map_id_to_query_text = map_id_to_query_text,
+                map_id_to_doc_text = map_id_to_doc_text
+            )
         elif train_mode == "triplets_with_distil":
             val_loss_loader = DistilSiamesePairsDataLoader(dataset=data_val, batch_size=config["eval_batch_size"],
                                                            shuffle=False,
@@ -140,10 +145,17 @@ def train(exp_dict: DictConfig):
             raise NotImplementedError
 
     if train_mode == "triplets":
-        train_loader = SiamesePairsDataLoaderTripletsIds(dataset=data_train, batch_size=config["train_batch_size"], shuffle=True,
-                                              num_workers=4,
-                                              tokenizer_type=config["tokenizer_type"],
-                                              max_length=config["max_length"], drop_last=drop_last)
+        train_loader = SiamesePairsDataLoaderTripletsIds(
+            dataset=data_train,
+            batch_size=config["train_batch_size"],
+            shuffle=True,
+            num_workers=4,
+            tokenizer_type=config["tokenizer_type"],
+            max_length=config["max_length"],
+            drop_last=drop_last,
+            map_id_to_query_text = map_id_to_query_text,
+            map_id_to_doc_text = map_id_to_doc_text
+        )
     elif train_mode == "triplets_with_distil":
         train_loader = DistilSiamesePairsDataLoader(dataset=data_train, batch_size=config["train_batch_size"],
                                                     shuffle=True,
