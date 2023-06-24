@@ -19,6 +19,44 @@ class DataLoaderWrapper(DataLoader):
         raise NotImplementedError("must implement this method")
 
 
+class SiamesePairsDataLoaderTripletsIds(DataLoaderWrapper):
+    """Siamese encoding (query and document independent)
+    train mode (pairs)
+    """
+
+    def collate_fn(self, batch):
+        """
+        batch is a list of tuples, each tuple has 3 (text) items (q, d_pos, d_neg)
+        """
+        q, d_pos, d_neg = zip(*batch)
+
+        # mapping query and doc queries to ids
+        q = tuple(map(self.map_id_to_query_text.get, q))
+        d_pos = tuple(map(self.map_id_to_doc_text.get, d_pos))
+        d_neg = tuple(map(self.map_id_to_doc_text.get, d_neg))
+        
+        q = self.tokenizer(list(q),
+                           add_special_tokens=True,
+                           padding="longest",  # pad to max sequence length in batch
+                           truncation="longest_first",  # truncates to self.max_length
+                           max_length=self.max_length,
+                           return_attention_mask=True)
+        d_pos = self.tokenizer(list(d_pos),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        d_neg = self.tokenizer(list(d_neg),
+                               add_special_tokens=True,
+                               padding="longest",  # pad to max sequence length in batch
+                               truncation="longest_first",  # truncates to self.max_length
+                               max_length=self.max_length,
+                               return_attention_mask=True)
+        sample = {**rename_keys(q, "q"), **rename_keys(d_pos, "pos"), **rename_keys(d_neg, "neg")}
+        return {k: torch.tensor(v) for k, v in sample.items()}
+
+
 class SiamesePairsDataLoader(DataLoaderWrapper):
     """Siamese encoding (query and document independent)
     train mode (pairs)
