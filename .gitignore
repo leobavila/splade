@@ -5,3 +5,7 @@
 model_ckpt/
 ckpt/
 output/
+data/mmarco
+data/mrobust
+data/robust04
+experiments/
